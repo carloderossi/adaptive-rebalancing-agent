@@ -98,7 +98,8 @@ def main():
 
     if st.button("Run rebalancing analysis"):
         orchestrator = OrchestratorLangGraph(drift_threshold=0.05)
-        result = orchestrator.run(portfolio, client_profile)
+        with st.spinner("Analyzing portfolio, running agents, and generating scenarios..."):
+            result = orchestrator.run(portfolio, client_profile)
 
         st.subheader("Current portfolio")
 
