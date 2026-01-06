@@ -1,9 +1,8 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 
 from models import Portfolio, PortfolioPosition, ClientProfile
-from orchestrator import Orchestrator
+from orchestrator_langgraph import OrchestratorLangGraph
 
 
 def parse_portfolio_csv(uploaded_file) -> Portfolio:
@@ -38,7 +37,7 @@ def default_target_allocation(risk_profile: str):
 
 
 def main():
-    st.title("Adaptive Portfolio Rebalancing Agent (MVP)")
+    st.title("Adaptive Portfolio Rebalancing Agent (Ollama + LangGraph)")
 
     st.sidebar.header("Client configuration")
 
@@ -98,7 +97,7 @@ def main():
     )
 
     if st.button("Run rebalancing analysis"):
-        orchestrator = Orchestrator(drift_threshold=0.05)
+        orchestrator = OrchestratorLangGraph(drift_threshold=0.05)
         result = orchestrator.run(portfolio, client_profile)
 
         st.subheader("Current portfolio")
@@ -113,7 +112,7 @@ def main():
         st.write("Target allocation by asset class:")
         st.bar_chart(pd.Series(client_profile.target_allocation))
 
-        if not result["needs_rebalancing"]:
+        if not result.get("needs_rebalancing"):
             st.success(result["no_action_summary"])
             return
 
@@ -139,7 +138,7 @@ def main():
                 if col1.button("Approve", key=f"approve_{scenario.name}"):
                     st.success(f"Scenario '{scenario.name}' approved (logged).")
                 if col2.button("Modify", key=f"modify_{scenario.name}"):
-                    st.info("Modification flow not yet implemented in MVP.")
+                    st.info("Modification flow not yet implemented in this version.")
                 if col3.button("Reject", key=f"reject_{scenario.name}"):
                     st.warning(f"Scenario '{scenario.name}' rejected (logged).")
 

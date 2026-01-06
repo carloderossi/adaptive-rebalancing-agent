@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from typing import Dict, List, Literal, Optional
 import pandas as pd
-import numpy as np
 
 
 RiskProfile = Literal["conservative", "moderate", "aggressive"]
