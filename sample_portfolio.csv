@@ -1,0 +1,6 @@
+ticker,quantity,price,cost_basis,asset_class
+AAPL,100,190,140,equity
+MSFT,80,380,250,equity
+BND,200,75,80,bonds
+IEF,150,100,98,bonds
+CASH,1,10000,10000,cash

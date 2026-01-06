@@ -1,0 +1,27 @@
+[project]
+name = "adaptive-rebalancing-agent"
+version = "0.1.0"
+description = "Adaptive Portfolio Rebalancing Agent (MVP) using Streamlit, PyPortfolioOpt, and uv"
+authors = [
+    { name = "Carlo" }
+]
+readme = "README.md"
+requires-python = ">=3.10"
+
+dependencies = [
+    "ollama>=0.1.0",
+    "streamlit>=1.40",
+    "pandas>=2.2",
+    "numpy>=1.26",
+    "yfinance>=0.2",
+    "pyportfolioopt>=1.5",
+]
+
+[tool.uv]
+# optional: speed up installs with uv's resolver
+# index-strategy = "first-index"
+
+
+# run with
+# uv run streamlit run app.py
+ 
