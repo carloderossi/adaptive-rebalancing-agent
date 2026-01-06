@@ -97,30 +97,65 @@ def main():
     )
 
     if st.button("Run rebalancing analysis"):
-        orchestrator = OrchestratorLangGraph(drift_threshold=0.05)
-        with st.spinner("Analyzing portfolio, running agents, and generating scenarios..."):
-            result = orchestrator.run(portfolio, client_profile)
+        with st.spinner("Running multi-agent workflow..."):
+            # --- Progress UI elements ---
+            progress = st.progress(0)
+            status = st.empty()
 
+            def update(step, text):
+                progress.progress(step)
+                status.write(text)
+
+            update(5, "Initializing orchestrator...")
+            orchestrator = OrchestratorLangGraph(drift_threshold=0.05)
+
+            # --- Step 1: Monitor Agent ---
+            update(15, "Monitoring portfolio drift...")
+            monitor_output = orchestrator.monitor_agent.analyze_drift(portfolio, client_profile)
+
+            if not monitor_output["needs_rebalancing"]:
+                update(100, "No rebalancing needed.")
+                st.success(
+                    f"Portfolio drift ({monitor_output['total_drift']*100:.1f}%) is below the threshold."
+                )
+                return
+
+            # --- Step 2: Analyst Agent (LLM) ---
+            update(40, "Analyzing portfolio with LLM (Analyst Agent)...")
+            analyst_output = orchestrator.analyst_agent.analyze(
+                portfolio, client_profile, monitor_output
+            )
+
+            # --- Step 3: Strategist Agent (LLM + PyPortfolioOpt) ---
+            update(70, "Generating rebalancing scenarios (Strategist Agent)...")
+            scenarios = orchestrator.strategist_agent.generate_scenarios(
+                portfolio, client_profile, monitor_output, analyst_output
+            )
+
+            # --- Step 4: Explainer Agent (LLM) ---
+            update(90, "Generating advisor-friendly explanations (Explainer Agent)...")
+            summaries = [
+                orchestrator.explainer_agent.build_summary_for_scenario(
+                    portfolio, client_profile, monitor_output, s
+                )
+                for s in scenarios
+            ]
+
+            update(100, "Done!")
+
+        # --- Display results ---
         st.subheader("Current portfolio")
-
         df = portfolio.to_dataframe()
         st.dataframe(df)
 
-        current_alloc = result["monitor_output"]["current_allocation"]
+        current_alloc = monitor_output["current_allocation"]
         st.write("Current allocation by asset class:")
         st.bar_chart(pd.Series(current_alloc))
 
         st.write("Target allocation by asset class:")
         st.bar_chart(pd.Series(client_profile.target_allocation))
 
-        if not result.get("needs_rebalancing"):
-            st.success(result["no_action_summary"])
-            return
-
         st.subheader("Rebalancing scenarios")
-        scenarios = result["scenarios"]
-        summaries = result["summaries"]
-
         for scenario, summary in zip(scenarios, summaries):
             with st.expander(f"Scenario: {scenario.name}", expanded=False):
                 st.write(summary)
@@ -137,11 +172,11 @@ def main():
 
                 col1, col2, col3 = st.columns(3)
                 if col1.button("Approve", key=f"approve_{scenario.name}"):
-                    st.success(f"Scenario '{scenario.name}' approved (logged).")
+                    st.success(f"Scenario '{scenario.name}' approved.")
                 if col2.button("Modify", key=f"modify_{scenario.name}"):
-                    st.info("Modification flow not yet implemented in this version.")
+                    st.info("Modification flow not implemented yet.")
                 if col3.button("Reject", key=f"reject_{scenario.name}"):
-                    st.warning(f"Scenario '{scenario.name}' rejected (logged).")
+                    st.warning(f"Scenario '{scenario.name}' rejected.")
 
 
 if __name__ == "__main__":

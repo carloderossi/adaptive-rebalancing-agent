@@ -2,10 +2,10 @@ ollama:
   host: "http://localhost:11434"   # default Ollama host
 
 models:
-  analyst: "qwen3:1.7b" #"qwen2.5-coder:14b"
-  strategist: "qwen3:1.7b" #"deepseek-coder-v2:16b"
-  explainer: "qwen3:1.7b" #"mistral:7b"
-  orchestrator: "qwen3:1.7b" #"qwen2.5:7b"
+  analyst: "qwen2.5-coder:14b"
+  strategist: "deepseek-coder-v2:16b"
+  explainer: "mistral:7b"
+  orchestrator: "qwen2.5:7b"
 
 defaults:
   temperature: 0.2
